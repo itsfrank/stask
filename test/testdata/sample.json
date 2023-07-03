@@ -1,0 +1,11 @@
+{
+  "tasks": {
+    "hello": "echo 'this is hello'",
+    "foo-task": "echo 'foo state is {foo-state}'",
+    "foo-bar-task": "echo 'foo:bar state is {foo-state}:{bar-state}'"
+  },
+  "state": {
+    "foo": "foo-state",
+    "bar": "bar-state"
+  }
+}
