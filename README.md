@@ -36,7 +36,8 @@ with `stask staskfile`):
   "Tasks": {
     "echo": "echo {message}",
     "cp": "cp {from} {to}"
-  }
+  },
+  "State": {}
 }
 ```
 
