@@ -28,10 +28,10 @@ markdown, or aren't convinced yet, the basic workflow is outlined below.
 
 First, make a your staskfile: `stask init`
 
-Add some tasks to your staskfile with your favorite text editor:
+Add some tasks to your staskfile with your favorite text editor (get its path
+with `stask staskfile`):
 
 ```json
-// staskfile.json (get it's path with `stask staskfile`)
 {
   "Tasks": {
     "echo": "echo {message}",
