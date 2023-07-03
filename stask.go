@@ -26,9 +26,9 @@ commands:
     set         set a value to state
     clear       remove a value from state
     run         run a command with state
-	dryrun      print command with state inserted
+    dryrun      print command with state inserted
     tasks       show list of available tasks
-	staskfile	print path to your staskfile
+    staskfile   print path to your staskfile
 
 other topics:
     syntax      how to author stask tasks`
