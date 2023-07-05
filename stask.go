@@ -82,14 +82,6 @@ const syntaxHelptext = `stast task syntax:
     stored state can be used in task by wrapping the name in braces {}`
 
 func main() {
-	// var setCmd = flag.NewFlagSet("set", flag.ExitOnError)
-	//
-	// var clearCmd = flag.NewFlagSet("clear", flag.ExitOnError)
-	//
-	// var stateCmd = flag.NewFlagSet("state", flag.ExitOnError)
-	//
-	// var runCmd = flag.NewFlagSet("run", flag.ExitOnError)
-
 	if len(os.Args) < 2 {
 		fmt.Fprintln(flag.CommandLine.Output(), mainHelptext)
 		os.Exit(1)
@@ -302,6 +294,32 @@ func getStaskfilePath() string {
 	return filepath.Join(homedir, ".config", "stask", "staskfile.json")
 }
 
+func getShellConfig() (shellConfig struct {
+	shell string
+	flags string
+}) {
+
+	shell, _ := os.LookupEnv("STASK_SHELL")
+	if len(shell) == 0 {
+		envShell, prs := os.LookupEnv("SHELL")
+		if len(envShell) == 0 || !prs {
+			fmt.Fprintln(flag.CommandLine.Output(), "error: no shell set")
+			fmt.Fprintln(flag.CommandLine.Output(), "    set either STASK_SHELL or SHELL env vars with path to shell STASK should use")
+			os.Exit(1)
+		}
+		shell = envShell
+	}
+
+	shellFlags, _ := os.LookupEnv("STASK_SHELL_FLAGS")
+	if len(shellFlags) == 0 {
+		shellFlags = "-ic"
+	}
+
+	shellConfig.shell = shell
+	shellConfig.flags = shellFlags
+	return shellConfig
+}
+
 func readStaskfile() staskfile.Staskfile {
 	return staskfile.Staskfile{}
 }
@@ -333,11 +351,15 @@ func getFormattedTask(key string) string {
 }
 
 func execCommand(command string) {
+	shellConfig := getShellConfig()
+	command = shellConfig.flags + "\"" + command + "\""
 	args, err := shlex.Split(command)
 	if err != nil {
 		panic(err)
 	}
-	cmd := exec.Command(args[0], args[1:]...)
+
+	cmd := exec.Command(shellConfig.shell, args...)
+	cmd.Env = os.Environ()
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
