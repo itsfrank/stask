@@ -370,7 +370,7 @@ func getFormattedTask(key string) string {
 
 func execCommand(command string) {
 	shellConfig := getShellConfig()
-	command = shellConfig.flags + "\"" + command + "\""
+	command = shellConfig.flags + " \"" + command + "\""
 	args, err := shlex.Split(command)
 	if err != nil {
 		panic(err)
