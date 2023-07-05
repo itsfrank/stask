@@ -77,3 +77,19 @@ commands:
 ```
 
 use `stask help <command>` for more information about any command
+
+## Shell
+
+stask requires that a shell be set via environment variables, on unix systems
+this is typically set by default so no extra config should be necessary. However
+if you wish to customize the shell used by stask (or troubleshoot errors) here
+is how stask determines the shell
+
+Shell env vars:
+
+- `STASK_SHELL`: if set will use this shell
+- `SHELL`: if `STASK_SHELL` is not set, will look for this var
+
+stask also passes flags to the shell, by default it passes `-ic`. If those flags
+don't work or you want to customize them, you can override them by setting
+`STASK_SHELL_FLAGS`

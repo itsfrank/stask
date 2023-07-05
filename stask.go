@@ -31,7 +31,8 @@ commands:
     staskfile   print path to your staskfile
 
 other topics:
-    syntax      how to author stask tasks`
+    syntax      how to author stask tasks
+    shell       how to configure what shel and shell flags stask will use`
 
 const helpHelptext = `stask help - print help for stask command or topic
 
@@ -73,13 +74,27 @@ const staskfileHelptext = `stask staskfile - print the path to your staskfile
 
     usage: stask staskfile`
 
-const syntaxHelptext = `stast task syntax:
+const syntaxHelptext = `stask task syntax:
     your staskfile has a "task" object, every field in that object is a runnable task
 
     task definitions look like this:
 	    "my-task": "something {state} something else {other-state}"
 
     stored state can be used in task by wrapping the name in braces {}`
+
+const shellHelptext = `stask shell config:
+    stask requires that a shell be explicitely set via environment variables
+    on unix systems this is typically already done by default via the "SHELL" environment variable
+    stask will consider 2 different variable to determing the desired shell:
+        STASK_SHELL   custom shell used only by stask
+        SHELL         system default on unix systems (fallback is STASK_SHELL not set)
+
+    stask passes flags to the shell to execute your tasks
+    by default is passes "-ic" flags, you can customized the passed in flags with this variable:
+        STASK_SHELL_FLAGS    custom flags passed to shell
+
+	the complete command executed by "stask run" looks like this:
+	    <$STASK_SHELL(or $SHELL)> <$STASK_SHELL_FLAGS> "<task>"`
 
 func main() {
 	if len(os.Args) < 2 {
@@ -158,6 +173,9 @@ func doHelp(topic string) {
 
 	case "syntax":
 		fmt.Fprintln(flag.CommandLine.Output(), syntaxHelptext)
+
+	case "shell":
+		fmt.Fprintln(flag.CommandLine.Output(), shellHelptext)
 	}
 }
 
