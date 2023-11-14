@@ -7,6 +7,8 @@ bunch of flags. The flags stay the same between commands depending on which
 flavor of the build you are currently using. I was tired of having to edit
 multiple commands in my shell history, so I made `stask`.
 
+**Update**: added `stask profile` subcommand! See below for more information
+
 ## Install
 
 stask is not on any package manager for the moment. The best way to install it
@@ -59,6 +61,25 @@ hello from stask
 cp ~/myfile ~/myfile_copy
 ```
 
+**new!** Save and load profiles!
+
+```shell
+> stask set name Frank
+> stask profile save frank
+profile 'frank' saved sucessfully
+
+> stask set name Joe
+> stask run greet
+hello Joe!
+
+> stask profile load frank
+frank - applying profile...
+    name : Joe -> Frank
+
+> stask run greet
+hello Frank!
+```
+
 ## Commands
 
 stask has a bunch of commands, here is the list from the help text
@@ -73,6 +94,7 @@ commands:
     run         run a command with state
     dryrun      print command with state inserted
     tasks       show list of available tasks
+    profile     list, show, load, save, delete profiles
     staskfile   print path to your staskfile
 ```
 

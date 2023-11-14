@@ -27,7 +27,8 @@ commands:
     clear       remove a value from state
     run         run a command with state
     dryrun      print command with state inserted
-    tasks       show list of available tasks
+    tasks       show list of available tasksdoTasks
+    profile     list, show, load, save, delete profiles
     staskfile   print path to your staskfile
 
 other topics:
@@ -67,6 +68,17 @@ const dryrunHelptext = `stask dryrun - print the command that would be executed 
 const tasksHelptext = `stask tasks - print list of available tasks
 
     usage: stask tasks`
+
+const profileHelptext = `stask profile - list, load, save profiles
+
+	usage: stask profile [subcommand] <args>
+
+subcommands:
+    list          - list available profiles
+    show <name>   - print the state stored in the profile
+    load <name>   - apply state stored in profile, overwiting only values in profile
+    save <name>   - save current state as new profile
+    delete <name> - save current state as new profile`
 
 const staskfileHelptext = `stask staskfile - print the path to your staskfile
 
@@ -108,11 +120,7 @@ func main() {
 		fmt.Fprintln(flag.CommandLine.Output(), mainHelptext)
 
 	case "help":
-		if len(os.Args) < 3 {
-			fmt.Fprintln(flag.CommandLine.Output(), helpHelptext)
-			os.Exit(1)
-		}
-		doHelp(os.Args[2])
+		doHelp(os.Args)
 
 	case "init":
 		doInit()
@@ -134,6 +142,10 @@ func main() {
 
 	case "tasks":
 		doTasks()
+
+	case "profile":
+		doProfile(os.Args)
+
 	case "staskfile":
 		doStaskfile()
 
@@ -144,7 +156,13 @@ func main() {
 	}
 }
 
-func doHelp(topic string) {
+func doHelp(args []string) {
+	if len(os.Args) < 3 {
+		fmt.Fprintln(flag.CommandLine.Output(), helpHelptext)
+		os.Exit(1)
+	}
+
+	topic := args[2]
 	switch topic {
 
 	case "help":
@@ -168,6 +186,9 @@ func doHelp(topic string) {
 	case "tasks":
 		fmt.Fprintln(flag.CommandLine.Output(), tasksHelptext)
 
+	case "profile":
+		fmt.Fprintln(flag.CommandLine.Output(), profileHelptext)
+
 	case "staskfile":
 		fmt.Fprintln(flag.CommandLine.Output(), staskfileHelptext)
 
@@ -176,6 +197,11 @@ func doHelp(topic string) {
 
 	case "shell":
 		fmt.Fprintln(flag.CommandLine.Output(), shellHelptext)
+
+	default:
+		fmt.Fprintf(flag.CommandLine.Output(), "error: unexpected help topic '%s'\n", topic)
+		fmt.Fprintln(flag.CommandLine.Output(), "    use \"stask --help\" for information")
+		os.Exit(1)
 	}
 }
 
@@ -292,6 +318,174 @@ func doTasks() {
 	for key := range sf.Tasks {
 		fmt.Fprintln(flag.CommandLine.Output(), "    ", key)
 	}
+}
+
+func doProfile(args []string) {
+	exitProfileUsageError := func(message string) {
+		fmt.Fprintf(flag.CommandLine.Output(), "error: %s\n", message)
+		fmt.Fprintln(flag.CommandLine.Output(), "    use \"stask help profile\" for usage information")
+		os.Exit(1)
+	}
+
+	if len(os.Args) < 3 {
+		exitProfileUsageError("unexpected number of arguments")
+	}
+
+	subcommand := args[2]
+	switch subcommand {
+
+	case "list":
+		doProfileList()
+
+	case "show":
+		if len(os.Args) < 4 {
+			exitProfileUsageError("missing argument <name>")
+		}
+		doProfileShow(os.Args[3])
+
+	case "load":
+		if len(os.Args) < 4 {
+			exitProfileUsageError("missing argument <name>")
+		}
+		doProfileLoad(os.Args[3])
+
+	case "save":
+		if len(os.Args) < 4 {
+			exitProfileUsageError("missing argument <name>")
+		}
+		doProfileSave(os.Args[3])
+
+	case "delete":
+		if len(os.Args) < 4 {
+			exitProfileUsageError("missing argument <name>")
+		}
+		doProfileDelete(os.Args[3])
+
+	default:
+		exitProfileUsageError(fmt.Sprintf("unexpected subcommand '%s'", subcommand))
+	}
+}
+
+func doProfileList() {
+	sf, err := staskfile.ReadStaskfile(getStaskfilePath())
+	if err != nil {
+		panic(err)
+	}
+
+	if len(sf.Profiles) == 0 {
+		fmt.Fprintln(flag.CommandLine.Output(), "no profiles stored in staskfile")
+		return
+	}
+
+	fmt.Fprintln(flag.CommandLine.Output(), "saved profiles:")
+	for key := range sf.Profiles {
+		fmt.Fprintln(flag.CommandLine.Output(), "    ", key)
+	}
+}
+
+func doProfileShow(name string) {
+	sf, err := staskfile.ReadStaskfile(getStaskfilePath())
+	if err != nil {
+		panic(err)
+	}
+
+	profile, found := sf.Profiles[name]
+	if !found {
+		fmt.Fprintf(flag.CommandLine.Output(), "no profile named '%s' in staskfile\n", name)
+		return
+	}
+
+	fmt.Fprintf(flag.CommandLine.Output(), "%s - profile state:\n", name)
+	for key, value := range profile {
+		fmt.Fprintln(flag.CommandLine.Output(), "    ", key, ":", value)
+	}
+}
+
+func doProfileLoad(name string) {
+	sf, err := staskfile.ReadStaskfile(getStaskfilePath())
+	if err != nil {
+		panic(err)
+	}
+
+	profile, found := sf.Profiles[name]
+	if !found {
+		fmt.Fprintf(flag.CommandLine.Output(), "no profile named '%s' in staskfile\n", name)
+		return
+	}
+
+	fmt.Fprintf(flag.CommandLine.Output(), "%s - applying profile...\n", name)
+	for key, value := range profile {
+		currentValue, found := sf.State[key]
+		if !found {
+			currentValue = "-"
+		}
+
+		sf.State[key] = value
+		if value == currentValue {
+			fmt.Fprintln(flag.CommandLine.Output(), "    ", key, ":", value, "[unchanged]")
+		} else {
+			fmt.Fprintln(flag.CommandLine.Output(), "    ", key, ":", currentValue, "->", value)
+		}
+	}
+
+	err = staskfile.WriteStaskfile(getStaskfilePath(), sf)
+	if err != nil {
+		fmt.Println("error while writing staskfile, profile was not applied")
+		panic(err)
+	}
+
+	fmt.Println("\nprofile applied sucessfully")
+}
+
+func doProfileSave(name string) {
+	sf, err := staskfile.ReadStaskfile(getStaskfilePath())
+	if err != nil {
+		panic(err)
+	}
+
+	_, profileExists := sf.Profiles[name]
+
+	newProfile := map[string]string{}
+	for key, value := range sf.State {
+		newProfile[key] = value
+	}
+
+	sf.Profiles[name] = newProfile
+
+	err = staskfile.WriteStaskfile(getStaskfilePath(), sf)
+	if err != nil {
+		fmt.Println("error while writing staskfile, profile was not applied")
+		panic(err)
+	}
+
+	if profileExists {
+		fmt.Fprintf(flag.CommandLine.Output(), "profile '%s' overwritten sucessfully\n", name)
+	} else {
+		fmt.Fprintf(flag.CommandLine.Output(), "profile '%s' saved sucessfully\n", name)
+	}
+}
+
+func doProfileDelete(name string) {
+	sf, err := staskfile.ReadStaskfile(getStaskfilePath())
+	if err != nil {
+		panic(err)
+	}
+
+	_, profileExists := sf.Profiles[name]
+	if !profileExists {
+		fmt.Fprintf(flag.CommandLine.Output(), "no profile named '%s' in staskfile\n", name)
+		return
+	}
+
+	delete(sf.Profiles, name)
+
+	err = staskfile.WriteStaskfile(getStaskfilePath(), sf)
+	if err != nil {
+		fmt.Println("error while writing staskfile, profile was not applied")
+		panic(err)
+	}
+
+	fmt.Fprintf(flag.CommandLine.Output(), "profile '%s' deleted sucessfully\n", name)
 }
 
 func doStaskfile() {
