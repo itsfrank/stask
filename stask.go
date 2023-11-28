@@ -575,5 +575,12 @@ func execCommand(command string) {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	cmd.Run()
+	err = cmd.Run()
+	if err != nil {
+		if exerr := err.(*exec.ExitError); exerr != nil {
+			os.Exit(exerr.ExitCode())
+		}
+		fmt.Fprintln(flag.CommandLine.Output(), "stask error while running task:  ", err.Error())
+		os.Exit(1)
+	}
 }
