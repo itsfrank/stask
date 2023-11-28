@@ -489,7 +489,7 @@ func doProfileDelete(name string) {
 }
 
 func doStaskfile() {
-	fmt.Fprintln(flag.CommandLine.Output(), getStaskfilePath())
+	fmt.Fprintln(os.Stdout, getStaskfilePath())
 }
 
 func getStaskfilePath() string {
