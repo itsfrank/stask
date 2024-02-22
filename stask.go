@@ -234,9 +234,9 @@ func doState() {
 		return
 	}
 
-	fmt.Fprintln(flag.CommandLine.Output(), "stask state:")
+	fmt.Fprintln(os.Stdout, "stask state:")
 	for key, value := range sf.State {
-		fmt.Fprintln(flag.CommandLine.Output(), "    ", key, ":", value)
+		fmt.Fprintln(os.Stdout, "    ", key, ":", value)
 	}
 }
 
@@ -314,9 +314,9 @@ func doTasks() {
 		return
 	}
 
-	fmt.Fprintln(flag.CommandLine.Output(), "stask tasks:")
+	fmt.Fprintln(os.Stdout, "stask tasks:")
 	for key := range sf.Tasks {
-		fmt.Fprintln(flag.CommandLine.Output(), "    ", key)
+		fmt.Fprintln(os.Stdout, "    ", key)
 	}
 }
 
@@ -377,9 +377,9 @@ func doProfileList() {
 		return
 	}
 
-	fmt.Fprintln(flag.CommandLine.Output(), "saved profiles:")
+	fmt.Fprintln(os.Stdout, "saved profiles:")
 	for key := range sf.Profiles {
-		fmt.Fprintln(flag.CommandLine.Output(), "    ", key)
+		fmt.Fprintln(os.Stdout, "    ", key)
 	}
 }
 
@@ -395,9 +395,9 @@ func doProfileShow(name string) {
 		return
 	}
 
-	fmt.Fprintf(flag.CommandLine.Output(), "%s - profile state:\n", name)
+	fmt.Fprintf(os.Stdout, "%s - profile state:\n", name)
 	for key, value := range profile {
-		fmt.Fprintln(flag.CommandLine.Output(), "    ", key, ":", value)
+		fmt.Fprintln(os.Stdout, "    ", key, ":", value)
 	}
 }
 
@@ -413,7 +413,7 @@ func doProfileLoad(name string) {
 		return
 	}
 
-	fmt.Fprintf(flag.CommandLine.Output(), "%s - applying profile...\n", name)
+	fmt.Fprintf(os.Stdout, "%s - applying profile...\n", name)
 	for key, value := range profile {
 		currentValue, found := sf.State[key]
 		if !found {
@@ -422,9 +422,9 @@ func doProfileLoad(name string) {
 
 		sf.State[key] = value
 		if value == currentValue {
-			fmt.Fprintln(flag.CommandLine.Output(), "    ", key, ":", value, "[unchanged]")
+			fmt.Fprintln(os.Stdout, "    ", key, ":", value, "[unchanged]")
 		} else {
-			fmt.Fprintln(flag.CommandLine.Output(), "    ", key, ":", currentValue, "->", value)
+			fmt.Fprintln(os.Stdout, "    ", key, ":", currentValue, "->", value)
 		}
 	}
 
@@ -459,9 +459,9 @@ func doProfileSave(name string) {
 	}
 
 	if profileExists {
-		fmt.Fprintf(flag.CommandLine.Output(), "profile '%s' overwritten sucessfully\n", name)
+		fmt.Fprintf(os.Stdout, "profile '%s' overwritten sucessfully\n", name)
 	} else {
-		fmt.Fprintf(flag.CommandLine.Output(), "profile '%s' saved sucessfully\n", name)
+		fmt.Fprintf(os.Stdout, "profile '%s' saved sucessfully\n", name)
 	}
 }
 
@@ -485,7 +485,7 @@ func doProfileDelete(name string) {
 		panic(err)
 	}
 
-	fmt.Fprintf(flag.CommandLine.Output(), "profile '%s' deleted sucessfully\n", name)
+	fmt.Fprintf(os.Stdout, "profile '%s' deleted sucessfully\n", name)
 }
 
 func doStaskfile() {
