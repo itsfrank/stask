@@ -27,7 +27,7 @@ commands:
     clear       remove a value from state
     run         run a command with state
     dryrun      print command with state inserted
-    tasks       show list of available tasksdoTasks
+    tasks       show list of available tasks
     profile     list, show, load, save, delete profiles
     staskfile   print path to your staskfile
 
