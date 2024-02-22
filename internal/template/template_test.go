@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/itsFrank/stask/internal/template"
+	"github.com/itsfrank/stask/internal/template"
 	"github.com/stretchr/testify/assert"
 )
 

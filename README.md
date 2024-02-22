@@ -21,7 +21,7 @@ Make sure `$GOPATH/bin` is on your `PATH` (note, use the
 [default GOPATH](https://go.dev/doc/gopath_code#GOPATH) if it is not set:
 `$HOME/go`)
 
-Install stask: `go install github.com/itsFrank/stask`
+Install stask: `go install github.com/itsfrank/stask`
 
 ## Usage
 

@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 
 	"github.com/google/shlex"
-	"github.com/itsFrank/stask/internal/staskfile"
-	"github.com/itsFrank/stask/internal/template"
+	"github.com/itsfrank/stask/internal/staskfile"
+	"github.com/itsfrank/stask/internal/template"
 )
 
 const mainHelptext = `stask - little stateful task runner

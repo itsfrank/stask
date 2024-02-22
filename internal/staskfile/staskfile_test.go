@@ -4,7 +4,7 @@ import (
 	"path"
 	"testing"
 
-	"github.com/itsFrank/stask/internal/staskfile"
+	"github.com/itsfrank/stask/internal/staskfile"
 	"github.com/stretchr/testify/assert"
 )
 

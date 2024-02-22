@@ -2,7 +2,7 @@ package staskfile
 
 import (
 	"encoding/json"
-	"github.com/itsFrank/stask/internal/jsonerror"
+	"github.com/itsfrank/stask/internal/jsonerror"
 	"os"
 )
 
