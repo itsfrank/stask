@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/google/shlex"
 	"github.com/itsfrank/stask/internal/staskfile"
@@ -59,11 +60,15 @@ const clearHelptext = `stask clear - remove a stored state value
 
 const runHelptext = `stask run - run a task using stored state
 
-    usage: stask run <task>`
+    usage: stask run <task> [-- <fwd args>]
+
+        fwd args: anything passed after a '--' will be appended to the command of the task`
 
 const dryrunHelptext = `stask dryrun - print the command that would be executed with "stask run"
 
-    usage: stask dryrun <task>`
+    usage: stask dryrun <task> [-- <fwd args>]
+
+        fwd args: anything passed after a '--' will be appended to the command of the task`
 
 const tasksHelptext = `stask tasks - print list of available tasks
 
@@ -282,25 +287,59 @@ func doClear(args []string) {
 }
 
 func doRun(args []string) {
-	if len(args) != 3 {
-		fmt.Fprintln(flag.CommandLine.Output(), "error: unexpected number of arguments")
+	exitRunUsageError := func(message string) {
+		fmt.Fprintf(flag.CommandLine.Output(), "error: %s\n", message)
 		fmt.Fprintln(flag.CommandLine.Output(), "    use \"stask help run\" for usage information")
 		os.Exit(1)
 	}
+
+	if len(args) < 3 {
+		exitRunUsageError("unexpected number of arguments")
+	}
+
 	var key = args[2]
 
-	execCommand(getFormattedTask(key))
+	var fwd []string
+	if len(args) > 3 {
+		var doubleDash = args[3]
+		if doubleDash != "--" {
+			exitRunUsageError(fmt.Sprintf("unexpected argument '%s'", doubleDash))
+		}
+
+		for i := 4; i < len(args); i++ {
+			fwd = append(fwd, args[i])
+		}
+	}
+
+	execCommand(getFormattedTask(key, fwd))
 }
 
 func doDryrun(args []string) {
-	if len(args) != 3 {
-		fmt.Fprintln(flag.CommandLine.Output(), "error: unexpected number of arguments")
-		fmt.Fprintln(flag.CommandLine.Output(), "    use \"stask help run\" for usage information")
+	exitDryrunUsageError := func(message string) {
+		fmt.Fprintf(flag.CommandLine.Output(), "error: %s\n", message)
+		fmt.Fprintln(flag.CommandLine.Output(), "    use \"stask help dryrun\" for usage information")
 		os.Exit(1)
 	}
+
+	if len(args) < 3 {
+		exitDryrunUsageError("unexpected number of arguments")
+	}
+
 	var key = args[2]
 
-	fmt.Println(getFormattedTask(key))
+	var fwd []string
+	if len(args) > 3 {
+		var doubleDash = args[3]
+		if doubleDash != "--" {
+			exitDryrunUsageError(fmt.Sprintf("unexpected argument '%s'", doubleDash))
+		}
+
+		for i := 4; i < len(args); i++ {
+			fwd = append(fwd, args[i])
+		}
+	}
+
+	fmt.Println(getFormattedTask(key, fwd))
 }
 
 func doTasks() {
@@ -536,7 +575,7 @@ func readStaskfile() staskfile.Staskfile {
 	return staskfile.Staskfile{}
 }
 
-func getFormattedTask(key string) string {
+func getFormattedTask(key string, fwd []string) string {
 	sf, err := staskfile.ReadStaskfile(getStaskfilePath())
 	if err != nil {
 		panic(err)
@@ -557,6 +596,10 @@ func getFormattedTask(key string) string {
 	if len(missing) > 0 {
 		fmt.Fprintln(flag.CommandLine.Output(), "error: task keys not found in state: ", missing)
 		os.Exit(1)
+	}
+
+	if len(fwd) > 0 {
+		str = strings.Join(append([]string{str}, fwd...), " ")
 	}
 
 	return str
