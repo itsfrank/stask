@@ -61,6 +61,13 @@ hello from stask
 cp ~/myfile ~/myfile_copy
 ```
 
+**new!** Forward args with `run` and `dryrun`!
+
+```shell
+> stask run echo -- more args here
+hello from stask more args here
+```
+
 **new!** Save and load profiles!
 
 ```shell
